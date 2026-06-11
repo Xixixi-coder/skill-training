@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skill 实战培训 — 让 AI 记住你说过的话</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans SC', -apple-system, sans-serif;
+    background: linear-gradient(180deg, #E8D5F5 0%, #D4B8E8 50%, #C9A8E0 100%);
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ---- Main Container ---- */
+  .presentation {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 32px;
+  }
+
+  /* ---- Header Bar ---- */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border: 2.5px solid #222;
+    border-radius: 40px;
+    padding: 12px 28px;
+    margin-bottom: 20px;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.08);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-icon {
+    width: 36px;
+    height: 36px;
+    background: #FFD700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    border: 2px solid #222;
+  }
+
+  .header-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #222;
+  }
+
+  .step-badge {
+    background: #fff;
+    border: 2px solid #222;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+  }
+
+  /* ---- Content Area ---- */
+  .content-area {
+    flex: 1;
+    display: flex;
+    gap: 24px;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ---- Slides ---- */
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    gap: 24px;
+  }
+
+  .slide.active {
+    display: flex;
+  }
+
+  .slides-container {
+    flex: 1;
+    position: relative;
+    min-height: 0;
+  }
+
+  /* ---- Cards ---- */
+  .card {
+    background: #fff;
+    border: 2.5px solid #222;
+    border-radius: 20px;
+    padding: 28px 32px;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.08);
+    overflow-y: auto;
+  }
+
+  .card-left {
+    flex: 1;
+  }
+
+  .card-right {
+    flex: 1;
+  }
+
+  .card-full {
+    flex: 1;
+    width: 100%;
+  }
+
+  /* ---- Section Header (green highlight) ---- */
+  .section-num {
+    display: inline-block;
+    background: #A8F0C8;
+    border-radius: 4px;
+    padding: 4px 12px;
+    font-size: 22px;
+    font-weight: 900;
+    color: #222;
+    margin-bottom: 20px;
+    border: 2px solid #222;
+  }
+
+  /* ---- Typography ---- */
+  h1 {
+    font-size: 36px;
+    font-weight: 900;
+    color: #222;
+    line-height: 1.3;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #222;
+    line-height: 1.3;
+    margin-bottom: 14px;
+  }
+
+  h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 10px;
+  }
+
+  p {
+    font-size: 17px;
+    line-height: 1.7;
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  .subtitle {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 16px;
+  }
+
+  .highlight {
+    color: #E83830;
+    font-weight: 700;
+  }
+
+  .hl-blue {
+    color: #3B82F6;
+    font-weight: 600;
+  }
+
+  .hl-green {
+    color: #10B981;
+    font-weight: 600;
+  }
+
+  .hl-purple {
+    color: #8B5CF6;
+    font-weight: 600;
+  }
+
+  /* ---- Lists ---- */
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  ul li {
+    font-size: 17px;
+    line-height: 1.7;
+    color: #333;
+    padding: 4px 0 4px 24px;
+    position: relative;
+  }
+
+  ul li::before {
+    content: '•';
+    position: absolute;
+    left: 6px;
+    color: #222;
+    font-weight: 900;
+    font-size: 20px;
+  }
+
+  /* ---- Links ---- */
+  a {
+    color: #3B82F6;
+    text-decoration: underline;
+    font-weight: 500;
+  }
+
+  /* ---- Code Block ---- */
+  .code-block {
+    background: #1E1E2E;
+    color: #CDD6F4;
+    border-radius: 12px;
+    border: 2px solid #222;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 12px 0;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* ---- Table ---- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 16px;
+    border: 2px solid #222;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  th {
+    background: #6C63FF;
+    color: #fff;
+    padding: 10px 14px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 15px;
+    border-bottom: 2px solid #222;
+  }
+
+  td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+  }
+
+  tr:hover td {
+    background: #F5F3FF;
+  }
+
+  /* ---- Decorated Panel (right side) ---- */
+  .decorated-panel {
+    background: linear-gradient(135deg, #E8F4FD 0%, #FDE8F0 50%, #E8F4E8 100%);
+    border: 2.5px solid #222;
+    border-radius: 20px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.08);
+  }
+
+  .decorated-panel::before {
+    content: '✨';
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 20px;
+  }
+
+  .decorated-panel::after {
+    content: '⭐';
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    font-size: 16px;
+  }
+
+  .panel-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 900;
+    color: #6C63FF;
+    margin-bottom: 16px;
+    text-shadow: 1px 1px 0 rgba(108,99,255,0.2);
+  }
+
+  /* ---- Gotcha Card ---- */
+  .gotcha {
+    background: #FFF8F0;
+    border: 2px solid #F59E0B;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: 8px 0;
+  }
+
+  .gotcha .rule {
+    font-weight: 700;
+    color: #222;
+    font-size: 16px;
+  }
+
+  .gotcha .reason {
+    font-size: 14px;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  /* ---- Flow Chart ---- */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+  }
+
+  .flow-step {
+    background: #F3F0FF;
+    border: 2px solid #6C63FF;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #6C63FF;
+  }
+
+  .flow-step.active-step {
+    background: #6C63FF;
+    color: #fff;
+  }
+
+  .flow-arrow {
+    font-size: 18px;
+    color: #999;
+  }
+
+  /* ---- Badge ---- */
+  .badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .badge-red { background: #FEE2E2; color: #DC2626; border: 1.5px solid #DC2626; }
+  .badge-blue { background: #DBEAFE; color: #2563EB; border: 1.5px solid #2563EB; }
+  .badge-green { background: #D1FAE5; color: #059669; border: 1.5px solid #059669; }
+  .badge-purple { background: #EDE9FE; color: #7C3AED; border: 1.5px solid #7C3AED; }
+  .badge-amber { background: #FEF3C7; color: #D97706; border: 1.5px solid #D97706; }
+
+  /* ---- Big Quote ---- */
+  .big-quote {
+    font-size: 22px;
+    font-weight: 500;
+    color: #444;
+    border-left: 4px solid #6C63FF;
+    padding: 12px 20px;
+    margin: 16px 0;
+    background: #F8F7FF;
+    border-radius: 0 12px 12px 0;
+  }
+
+  /* ---- Phase Card ---- */
+  .phase-card {
+    background: #fff;
+    border: 2px solid #222;
+    border-radius: 14px;
+    padding: 16px;
+    margin: 8px 0;
+    border-left: 5px solid;
+  }
+
+  .phase-card.p1 { border-left-color: #E83830; }
+  .phase-card.p2 { border-left-color: #3B82F6; }
+  .phase-card.p3 { border-left-color: #10B981; }
+  .phase-card.p4 { border-left-color: #F59E0B; }
+  .phase-card.p5 { border-left-color: #8B5CF6; }
+  .phase-card.p6 { border-left-color: #06B6D4; }
+
+  /* ---- Tree ---- */
+  .tree-block {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    line-height: 2;
+    background: #F8FAFC;
+    border: 2px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 12px 0;
+  }
+
+  .tree-block .root { color: #E83830; font-weight: 700; }
+  .tree-block .leaf { color: #3B82F6; font-weight: 600; }
+  .tree-block .dim { color: #94A3B8; }
+
+  /* ---- Three Col Grid ---- */
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin: 12px 0;
+  }
+
+  .grid-3 .card-mini {
+    background: #fff;
+    border: 2px solid #222;
+    border-radius: 14px;
+    padding: 20px 16px;
+    text-align: center;
+  }
+
+  .grid-3 .card-mini .num {
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  /* ---- Navigation ---- */
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0 0;
+  }
+
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #D4E9FF;
+    border: 2px solid #222;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #222;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .nav-btn:hover {
+    background: #B8DAFF;
+    transform: translateY(-2px);
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+  }
+
+  .nav-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  .dots {
+    display: flex;
+    gap: 8px;
+  }
+
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #222;
+    background: #fff;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+
+  .dot.active {
+    background: #222;
+  }
+
+  /* ---- Mascot ---- */
+  .mascot {
+    position: fixed;
+    bottom: 20px;
+    right: 40px;
+    font-size: 40px;
+    z-index: 100;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  /* ---- Stars decoration ---- */
+  .stars {
+    position: absolute;
+    pointer-events: none;
+  }
+
+  /* ---- Cover special ---- */
+  .cover-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+  }
+
+  .cover-content h1 {
+    font-size: 42px;
+    margin-bottom: 20px;
+  }
+
+  .cover-content .emoji-big {
+    font-size: 64px;
+    margin-bottom: 20px;
+  }
+
+  /* ---- Comparison table ---- */
+  .compare-table td:first-child {
+    font-weight: 700;
+    background: #F8FAFC;
+  }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .slide { flex-direction: column; }
+    .grid-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="presentation">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-icon">⭐</div>
+      <div class="header-title">Skill 实战培训（全量同事版）</div>
+    </div>
+    <div class="step-badge" id="stepBadge">Step 1 / 11</div>
+  </div>
+
+  <!-- Slides Container -->
+  <div class="slides-container">
+
+    <!-- ===== SLIDE 1: Cover ===== -->
+    <div class="slide active" data-slide="0">
+      <div class="card card-full">
+        <div class="cover-content">
+          <div class="emoji-big">🧠</div>
+          <h1>把你说过一百遍的话<br>变成<span class="highlight">只说一次</span></h1>
+          <p class="subtitle" style="font-size: 20px; color: #666; margin-top: 8px;">Skill 实战培训 — 从手写到自动蒸馏</p>
+          <div class="flow" style="margin-top: 24px; justify-content: center;">
+            <div class="flow-step">L1 手写 Skill</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">L2 自动蒸馏</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">L3 思维蒸馏</div>
+          </div>
+          <p style="margin-top: 24px; color: #999; font-size: 15px;">← → 键翻页 &nbsp;|&nbsp; 点击底部导航按钮</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SLIDE 2: Pain Point ===== -->
+    <div class="slide" data-slide="1">
+      <div class="card card-left">
+        <div class="section-num">1. 痛点</div>
+        <h2>你是不是每次都在重复同样的话？</h2>
+        <div class="big-quote">
+          每次让 AI 帮你做事，你得重新解释一遍：<br>
+          你是谁、你的产品是什么、你的风格偏好、上次踩过的坑、不要用哪些词……
+        </div>
+        <p style="font-size: 19px; margin-top: 16px;">说一次还行。说十次就累了。说一百次 —</p>
+        <p style="font-size: 22px; font-weight: 700; color: #222; margin-top: 8px;">
+          我到底是在<span class="hl-blue">用工具</span>，还是在<span class="highlight">训练工具</span>？
+        </p>
+      </div>
+      <div class="card card-right" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+        <div style="font-size: 80px; margin-bottom: 20px;">🔁</div>
+        <h2 style="color: #6C63FF;">Skill 解决这个问题</h2>
+        <ul style="text-align: left; margin-top: 16px;">
+          <li>你的身份和偏好 → <span class="hl-green">不用每次自我介绍</span></li>
+          <li>你踩过的坑 → <span class="hl-green">不用每次重新提醒</span></li>
+          <li>验证过的工作流 → <span class="hl-green">不用每次从零描述</span></li>
+        </ul>
+        <p style="margin-top: 20px; padding: 12px 16px; background: #F0FDF4; border-radius: 10px; border: 2px solid #10B981; font-weight: 600;">
+          Skill = 把重复的话固化成文件，AI 自动加载
+        </p>
+      </div>
+    </div>
+
+    <!-- ===== SLIDE 3: Skill Structure ===== -->
+    <div class="slide" data-slide="2">
+      <div class="card card-left">
+        <div class="section-num">2. 基本结构</div>
+        <h2>Skill 长什么样？</h2>
+        <div class="code-block">---
+name: my-skill-name
+description: "用户说「XXX」时加载"
+---
+
+# Skill 名称
+一句话定位。
+
+## Gotchas
+1. [你踩过的坑]
+2. [模型容易犯的错]
+
+## 工作流
+Phase 1 → Phase 2 → Phase 3
+
+## Phase 1: [阶段名]
+目标、输入输出、停止条件</div>
+      </div>
+      <div class="decorated-panel card-right">
+        <div class="panel-title">📖 核心要素</div>
+        <table>
+          <tr><th>要素</th><th>作用</th></tr>
+          <tr><td style="font-weight: 700;">📛 name</td><td>Skill 的唯一标识</td></tr>
+          <tr><td style="font-weight: 700;">📝 description</td><td>触发路由关键词</td></tr>
+          <tr><td style="font-weight: 700;">⚠️ Gotchas</td><td>踩坑规则，优先级最高</td></tr>
+          <tr><td style="font-weight: 700;">🔄 工作流</td><td>分阶段执行，有停止条件</td></tr>
+          <tr><td style="font-weight: 700;">📂 References</td><td>详细规范按需加载</td></tr>
+          <tr><td style="font-weight: 700;">📜 Scripts</td><td>可执行脚本给能力</td></tr>
+        </table>
+        <div style="margin-top: 16px; padding: 12px; background: #FEF3C7; border-radius: 10px; border: 2px solid #F59E0B;">
+          <p style="font-size: 15px; margin: 0;"><strong>💡 记住：</strong>Gotchas 最有价值！模型不知道的隐性知识，放在最前面。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SLIDE 4: L1 Section ===== -->
+    <div class="slide" data-slide="3">
+      <div class="card card-full" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: linear-gradient(135deg, #FEE2E2 0%, #FFF 100%);">
+        <div class="badge badge-red" style="font-size: 18px; padding: 6px 20px;">LEVEL 1</div>
+        <h1 style="margin-top: 16px; font-size: 40px;">手写 Skill</h1>
+        <p style="font-size: 22px; color: #666; margin-top: 8px;">把工作中重复最多的一件事，让 AI 做一遍</p>
+        <div class="flow" style="margin-top: 24px; justify-content: center;">
+          <div class="flow-step active-step">找重复工作</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step active-step">让 AI 做一遍</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step active-step">反馈变规则</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step active-step">固化成 Skill</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SLIDE 5: Demo Generator ===== -->
+    <div class="slide" data-slide="4">
+      <div class="card card-left">
+        <div class="section-num">3. 案例</div>
+        <h2>Demo Generator 的诞生</h2>
+        <p class="subtitle">我的痛点 — 做 Demo</p>
+        <ul>
+          <li>给 A 商户演示要 Demo</li>
+          <li>给 B 商户演示要 Demo</li>
+          <li>一个 Demo 最快<span class="highlight">半天</span></li>
+          <li>找设计排期？下周吧</li>
+        </ul>
+        <div class="big-quote" style="margin-top: 16px; font-size: 18px;">
+          我跟 Claude 说：「我需要一个工具，把产品想法直接变成可演示的 HTML，双击就能开。」
+        </div>
+        <p style="margin-top: 12px; color: #999;">第一版能用但粗糙 — 文案 AI 味重、风格飘、暴露内部细节</p>
+      </div>
+      <div class="card card-right">
+        <h3>关键动作：每次反馈沉淀成规则</h3>
+        <div class="gotcha">
+          <div class="rule">⚠️ 支付场景禁用「签约」，使用「开通/绑定」</div>
+          <div class="reason">原因：用户认为「签约」太正式</div>
+        </div>
+        <div class="gotcha">
+          <div class="rule">⚠️ 三力决策模型不在 Demo 中展示</div>
+          <div class="reason">原因：内部算法不暴露给外部受众</div>
+        </div>
+        <div class="gotcha">
+          <div class="rule">⚠️ 开通流程必须是跳转页面</div>
+          <div class="reason">原因：真实产品逻辑是跳转到绑定页</div>
+        </div>
+        <div class="gotcha">
+          <div class="rule">⚠️ AI-slop 文案一律删</div>
+          <div class="reason">「智能赋能」「一站式」「无缝衔接」出现即失败</div>
+        </div>
+        <div class="gotcha">
+          <div class="rule">⚠️ 不编造看起来真实的数据</div>
+          <div class="reason">所有数据由我提供</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SLIDE 6: Standing on Giants ===== -->
+    <div class="slide" data-slide="5">
+      <div class="card card-left">
+        <div class="section-num">4. 组合</div>
+        <h2>站在巨人肩膀上</h2>
+        <p>单个 Skill 搞不定所有事 — 让多个 Skill 各司其职：</p>
+        <div class="tree-block">
+<span class="root">demo-generator</span>          <span class="dim">← 主控</span>
+  <span class="dim">├──</span> <span class="leaf">frontend-design</span>    <span class="dim">← 视觉规范</span>
+  <span class="dim">├──</span> <span class="leaf">frontend-slides</span>    <span class="dim">← 幻灯片</span>
+  <span class="dim">├──</span> <span class="leaf">grill-me</span>           <span class="dim">← 拷打需求</span>
+  <span class="dim">├──</span> <span class="leaf">problem-clarity</span>    <span class="dim">← 评判</span>
+  <span class="dim">└──</span> <span class="leaf">prd-critic</span>         <span class="dim">← 方案评估</span>
+        </div>
+        <table style="margin-top: 16px;">
+          <tr><th>Demo</th><th>用 Skill</th><th>传统方式</th></tr>
+          <tr><td>麦当劳×AI付</td><td style="color: #10B981; font-weight: 700;">20 分钟</td><td>半天</td></tr>
+          <tr><td>海尔冰箱×AI付</td><td style="color: #10B981; font-weight: 700;">15 分钟</td><td>半天</td></tr>
+          <tr><td>海尔合作方案 PPT</td><td style="color: #10B981; font-weight: 700;">10 分钟</td><td>半天</td></tr>
+        </table>
+      </div>
+      <div class="decorated-panel card-right">
+        <div class="panel-title">🛠️ 工作流六阶段</div>
+        <div class="phase-card p1"><strong>Phase 1</strong> 拷打式需求挖掘 — 逐个追问</div>
+        <div class="phase-card p2"><strong>Phase 2</strong> 锁定视觉方向 — 选定锚点不漂移</div>
+        <div class="phase-card p3"><strong>Phase 3</strong> 生成 Demo — HTML/PPT/视频</div>
+        <div class="phase-card p4"><strong>Phase 4</strong> 自检迭代 — 核心/逻辑/文案</div>
+        <div class="phase-card p5"><strong>Phase 5</strong> 反向拷打 — 切换角色模拟质疑</div>
+        <div class="phase-card p6"><strong>Phase 6</strong> 一源多版 — 客户版+决策者版+传播版</div>
+      </div>
+    </div>
+
+    <!-- ===== SLIDE 7: How to create ===== -->
+    <div class="slide" data-slide="6">
+      <div class="card card-left">
+        <div class="section-num">5. 怎么做</div>
+        <h2>创建你的第一个 Skill</h2>
+        <h3>推荐：用 skill-creator 引导创建</h3>
+        <p>内置标准 SOP，引导你梳理需求，快速创出高质量 Skill。</p>
+        <div class="code-block" style="font-size: 14px;">帮我安装 skill-creator
+https://github.com/anthropics/skills
+  /tree/main/skills/skill-creator</div>
+        <h3 style="margin-top: 20px;">三步心法</h3>
+        <div style="font-size: 18px; line-height: 2.2;">
+          <p><strong style="color: #E83830; font-size: 28px;">①</strong> 找出你<strong>重复最多</strong>的工作</p>
+          <p><strong style="color: #E83830; font-size: 28px;">②</strong> 让 AI 做一遍，<strong>记录每次反馈</strong></p>
+          <p><strong style="color: #E83830; font-size: 28px;">③</strong> 反馈沉淀成 Gotchas，<strong>固化为 Skill</strong></p>
+        </div>
+      </div>
+      <div class="decorated-panel card-right">
+        <div class="panel-title">🌐 Skill 哪里找？</div>
+        <table>
+          <tr><th>平台</th><th>特点</th></tr>
+          <tr><td><a href="#">SkillsMP</a></td><td>聚合 GitHub 11 万+ 开源技能</td></tr>
+          <tr><td><a href="#">Agent Skills</a></td><td>6000+ 好用技能</td></tr>
+          <tr><td><a href="#">Skills.sh</a></td><td>一键安装热门技能</td></tr>
+          <tr><td><a href="#">SkillStore</a></td><td>中文友好，安全审查</td></tr>
+          <tr><td><a href="#">Skills Directory</a></td><td>Reddit 社区推荐</td></tr>
+        </table>
+        <div style="margin-top: 16px; padding: 12px; background: #EDE9FE; border-radius: 10px; border: 2px solid #8B5CF6;">
+          <p style="font-size: 14px; margin: 0;"><strong>📦 官方仓库：</strong><br>Anthropics Skills / Vercel Agent Skills / Awesome Agent Skills</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SLIDE 8: L2 Section ===== -->
+    <div class="slide" data-slide="7">
+      <div class="card card-full" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: linear-gradient(135deg, #DBEAFE 0%, #FFF 100%);">
+        <div class="badge badge-blue" style="font-size: 18px; padding: 6px 20px;">LEVEL 2</div>
+        <h1 style="margin-top: 16px; font-size: 40px;">自动蒸馏</h1>
+        <p style="font-size: 22px; color: #666; margin-top: 8px;">让 AI 从你的工作过程中自动提取 Skill</p>
+        <p style="font-size: 18px; color: #3B82F6; margin-top: 12px;">Hermes Agent（爱马仕）— "The agent that grows with you"</p>
+        <div class="flow" style="margin-top: 24px; justify-content: center;">
+          <div class="flow-step">你正常工作</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">AI 观察过程</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step active-step">自动提炼 Skill</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SLIDE 9: Hermes Detail ===== -->
+    <div class="slide" data-slide="8">
+      <div class="card card-left">
+        <div class="section-num">6. 爱马仕</div>
+        <h2>Hermes Agent 怎么工作？</h2>
+        <table class="compare-table">
+          <tr><th></th><th>传统 Skill</th><th>Hermes 蒸馏</th></tr>
+          <tr><td>谁提取</td><td>你自己</td><td style="color: #3B82F6; font-weight: 700;">AI 自动</td></tr>
+          <tr><td>什么时候</td><td>事后总结</td><td style="color: #3B82F6; font-weight: 700;">任务后自动触发</td></tr>
+          <tr><td>怎么进化</td><td>你手动更新</td><td style="color: #3B82F6; font-weight: 700;">使用中自改进</td></tr>
+          <tr><td>记忆</td><td>每次从零</td><td style="color: #3B82F6; font-weight: 700;">跨会话持久</td></tr>
+        </table>
+        <h3 style="margin-top: 16px;">安装</h3>
+        <div class="code-block" style="font-size: 14px;"># macOS / Linux
+curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+
+# 配置
+hermes setup --portal
+
+# 查看自动提取的技能
+/skills</div>
+      </div>
+      <div class="card card-right">
+        <h3>实操体验</h3>
+        <div style="font-size: 17px; line-height: 2;">
+          <p><span class="badge badge-amber">第一次</span> 你告诉它怎么做（从零开始）</p>
+          <p><span class="badge badge-green">第二次</span> 它记住了，主动复用</p>
+          <p><span class="badge badge-blue">第三次</span> 它已经沉淀成了 Skill</p>
+        </div>
+        <div style="margin-top: 20px; padding: 16px; background: #F0FDF4; border-radius: 12px; border: 2px solid #10B981;">
+          <h3 style="color: #059669;">✅ 你不需要跟它说「帮我写个 Skill」</h3>
+          <p style="font-size: 15px; margin-top: 8px;">你只需要正常工作。比如连续做了 3 个支付 Demo，它自己把「做支付 Demo」沉淀成了一个 Skill。</p>
+        </div>
+        <div style="margin-top: 16px; padding: 16px; background: #FEF3C7; border-radius: 12px; border: 2px solid #F59E0B;">
+          <h3>💡 建议：两者结合</h3>
+          <ul style="font-size: 15px;">
+            <li><strong>核心高频</strong>任务 → 手写 Skill（精确）</li>
+            <li><strong>长尾低频</strong>任务 → 爱马仕自动蒸馏</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SLIDE 10: L3 Section ===== -->
+    <div class="slide" data-slide="9">
+      <div class="card card-left" style="background: linear-gradient(135deg, #EDE9FE 0%, #FFF 100%);">
+        <div class="badge badge-purple" style="font-size: 16px; padding: 6px 16px;">LEVEL 3</div>
+        <h1 style="margin-top: 12px; font-size: 34px;">思维蒸馏 — 女娲 Skill</h1>
+        <p style="font-size: 18px; color: #666; margin-top: 8px;">不是复制一个人说过什么，而是提取他<strong>怎么想</strong></p>
+        <table style="margin-top: 16px;">
+          <tr><th>维度</th><th>提取什么</th></tr>
+          <tr><td>🧠 心智模型</td><td>他用什么镜片看世界</td></tr>
+          <tr><td>⚡ 决策启发式</td><td>「如果 X，则 Y」的直觉规则</td></tr>
+          <tr><td>🗣️ 表达 DNA</td><td>怎么说话、什么节奏</td></tr>
+          <tr><td>🚫 反模式</td><td>绝对不会做什么</td></tr>
+          <tr><td>🎯 诚实边界</td><td>这个 Skill 做不到什么</td></tr>
+        </table>
+      </div>
+      <div class="card card-right">
+        <h3>执行流程</h3>
+        <div class="tree-block" style="font-size: 14px; line-height: 1.8;">
+Phase 0   入口分流
+  ├ 明确人名 → 直接蒸馏
+  └ 模糊需求 → 诊断推荐 → 再蒸馏
+
+Phase 0.5 深度调研（6 Agent 并行）
+  → 著作与系统思考
+  → 长对话与即兴思考
+  → 碎片表达与风格 DNA
+  → 他者视角与批评
+  → 决策记录与行动
+  → 人物时间线
+
+Phase 1   提炼思维框架
+Phase 2   生成可运行 Skill</div>
+        <div style="margin-top: 16px; padding: 14px; background: #F5F3FF; border-radius: 10px; border: 2px solid #8B5CF6;">
+          <h3 style="color: #7C3AED;">💡 最实用场景 — 蒸馏你自己</h3>
+          <p style="font-size: 15px; margin-top: 6px;">和 Claude 说：「蒸馏我自己，我手上有这些素材：我的文章 / 决策备忘录 / 会议录音 / 聊天记录」</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SLIDE 11: Summary ===== -->
+    <div class="slide" data-slide="10">
+      <div class="card card-full" style="padding: 32px;">
+        <div class="section-num">总结</div>
+        <h2>三层 Skill 提取 + 核心总结</h2>
+        <div class="grid-3" style="margin-top: 20px;">
+          <div class="card-mini" style="border-top: 4px solid #E83830;">
+            <div class="num" style="color: #E83830;">L1</div>
+            <h3>手写 Skill</h3>
+            <p style="font-size: 14px; color: #666;">主动总结经验<br>工具：skill-creator<br>适合：核心高频任务</p>
+          </div>
+          <div class="card-mini" style="border-top: 4px solid #3B82F6;">
+            <div class="num" style="color: #3B82F6;">L2</div>
+            <h3>自动蒸馏</h3>
+            <p style="font-size: 14px; color: #666;">AI 从任务中提取<br>工具：Hermes Agent<br>适合：长尾低频任务</p>
+          </div>
+          <div class="card-mini" style="border-top: 4px solid #8B5CF6;">
+            <div class="num" style="color: #8B5CF6;">L3</div>
+            <h3>思维蒸馏</h3>
+            <p style="font-size: 14px; color: #666;">提炼思维方式<br>工具：女娲 Skill<br>适合：决策模式复制</p>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 24px;">
+          <div style="padding: 16px; background: #FEF2F2; border-radius: 12px; border: 2px solid #FECACA; text-align: center;">
+            <p style="font-size: 28px; margin-bottom: 6px;">🎯</p>
+            <h3 style="font-size: 16px;">AI 放大判断力</h3>
+            <p style="font-size: 13px; color: #666;">半天→半小时后，把时间花在判断方案对不对</p>
+          </div>
+          <div style="padding: 16px; background: #EFF6FF; border-radius: 12px; border: 2px solid #BFDBFE; text-align: center;">
+            <p style="font-size: 28px; margin-bottom: 6px;">📚</p>
+            <h3 style="font-size: 16px;">Context > Prompt</h3>
+            <p style="font-size: 13px; color: #666;">给 AI 看什么比怎么问更重要</p>
+          </div>
+          <div style="padding: 16px; background: #F0FDF4; border-radius: 12px; border: 2px solid #BBF7D0; text-align: center;">
+            <p style="font-size: 28px; margin-bottom: 6px;">⚡</p>
+            <h3 style="font-size: 16px;">先做再想</h3>
+            <p style="font-size: 13px; color: #666;">想法→Demo→PRD，验证是最快的规划</p>
+          </div>
+        </div>
+        <div style="text-align: center; margin-top: 24px; padding: 16px; background: #F8FAFC; border-radius: 12px; border: 2px solid #E2E8F0;">
+          <p style="font-size: 16px; margin: 0;"><strong>推荐阅读：</strong>Anthropic: Lessons from building Claude Code — How we use skills &nbsp;|&nbsp; Perplexity: Designing, refining and maintaining agent skills</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /slides-container -->
+
+  <!-- Navigation -->
+  <div class="nav-bar">
+    <div class="nav-btn" id="prevBtn" onclick="prev()">← Previous</div>
+    <div class="dots" id="dots"></div>
+    <div class="nav-btn" id="nextBtn" onclick="next()">Next →</div>
+  </div>
+</div>
+
+<!-- Mascot -->
+<div class="mascot">🐱</div>
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const dotsContainer = document.getElementById('dots');
+  const stepBadge = document.getElementById('stepBadge');
+  let current = 0;
+
+  // Create dots
+  slides.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => goTo(i);
+    dotsContainer.appendChild(dot);
+  });
+
+  function goTo(idx) {
+    if (idx < 0 || idx >= slides.length) return;
+    slides[current].classList.remove('active');
+    dotsContainer.children[current].classList.remove('active');
+    current = idx;
+    slides[current].classList.add('active');
+    dotsContainer.children[current].classList.add('active');
+    stepBadge.textContent = `Step ${current + 1} / ${slides.length}`;
+  }
+
+  window.next = () => goTo(current + 1);
+  window.prev = () => goTo(current - 1);
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+  });
+
+  // Touch
+  let tx = 0;
+  document.addEventListener('touchstart', e => tx = e.touches[0].clientX);
+  document.addEventListener('touchend', e => {
+    const diff = tx - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) diff > 0 ? next() : prev();
+  });
+})();
+</script>
+</body>
+</html>
